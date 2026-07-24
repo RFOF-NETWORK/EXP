@@ -1,0 +1,23 @@
+{
+  "short_name": "EXP Net",
+  "name": "EXP-NETWORK Matrix Engine",
+  "icons": [
+    {
+      "src": "assets/images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/images/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#050b05",
+  "theme_color": "#0a140a",
+  "display": "standalone",
+  "orientation": "portrait-primary"
+}
