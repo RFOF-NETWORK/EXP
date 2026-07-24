@@ -4,7 +4,7 @@
 Dieses Dokument dient als präziser Entwicklungsplan für das Repository EXP. Die progressive Web-App (PWA) wird ohne Backend oder Terminal, rein über das Smartphone entwickelt und über GitHub Pages (Deploy from Branch: main) unter einer kostenlosen *.github.io Domain gehostet.
 ------------------------------
 ## 📂 Repository-Struktur (Dateibaum)
-
+```
 EXP/
 ├── index.html               # Haupt-Einstiegspunkt (Ansicht-Router & Layout-Anker)
 ├── manifest.json            # Web-App Konfiguration für mobiles Homescreen-Inlining
@@ -23,7 +23,7 @@ EXP/
 │       └── rpc_evm.js       # EVM-Schnittstellen-Logik (Kompatibilität: Satoshi/Gwei)
 └── assets/
     └── images/              # System-Grafiken, Diagramme und Icons
-
+```
 ------------------------------
 ## 📱 Spezifikation der 4 App-Ansichten (Views)
 Die App wird als Single-Page-Application (SPA) via js/app.js gesteuert. Die Statusleiste am oberen Bildschirmrand bleibt in allen Ansichten permanent sichtbar.
