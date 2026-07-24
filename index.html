@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>EXP NETWORK</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+    <!-- PERMANENTE STATUSLEISTE (IMMER OBEN SICHTBAR) -->
+    <header id="status-bar">
+        <div class="status-left">
+            <span id="network-status" class="status-badge">● ONLINE</span>
+            <span id="current-user-display">Gast</span>
+        </div>
+        <div class="status-center">
+            <span class="logo-text">EXP NETWORK</span>
+        </div>
+        <div class="status-right">
+            <span id="block-height-display">#0</span>
+            <button id="nav-settings-btn" class="icon-btn hidden" aria-label="Settings">⚙️</button>
+        </div>
+    </header>
+
+    <!-- HAUPTCONTAINER FÜR DEN SPA-ROUTER -->
+    <main id="app-container">
+
+        <!-- ANSICHT 1: AUTHENTIFIZIERUNG (LOGIN / REGISTRIERUNG) -->
+        <section id="view-auth" class="view-section active">
+            <div class="auth-box">
+                <h2>Genesis-Konto erstellen</h2>
+                <p class="auth-info">Dein Passwort verankert deine Seed-Phrase unwiderruflich im RAM (Cold).</p>
+                <div class="form-group">
+                    <input type="text" id="auth-username" placeholder="Benutzername" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="auth-password" placeholder="Sicheres Passwort" required>
+                </div>
+                <button id="auth-submit-btn" class="btn-primary">Konto initialisieren & Einloggen</button>
+            </div>
+            
+            <!-- Lokale & Globale History direkt in Ansicht 1 integriert -->
+            <div class="auth-history-container">
+                <h3>Simultane Genesis History</h3>
+                <div id="auth-explorer-preview" class="explorer-split">
+                    <div class="explorer-pane">
+                        <h4>Lokal (Hot)</h4>
+                        <div id="auth-local-blocks" class="block-stream"></div>
+                    </div>
+                    <div class="explorer-pane">
+                        <h4>Global (Fractal)</h4>
+                        <div id="auth-global-blocks" class="block-stream"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANSICHT 2: DASHBOARD & TRADING INTERFACE -->
+        <section id="view-dashboard" class="view-section">
+            <div class="dashboard-header">
+                <div class="balance-container">
+                    <span class="label">Gesamtguthaben (Fiat)</span>
+                    <h1 id="total-fiat-balance">$ 0.00</h1>
+                    
+                    <div class="wallet-address-bar">
+                        <span id="wallet-address-display" class="address-text">Generiere Adresse...</span>
+                        <button id="copy-address-btn" class="btn-mini-copy">📋</button>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button id="action-send-btn" class="btn-action">💸 Senden</button>
+                    <button id="action-swap-btn" class="btn-action">🔄 Tauschen</button>
+                    <button id="nav-mining-btn" class="btn-mining-nav">⛏️ Mining</button>
+                </div>
+            </div>
+
+            <!-- KONTO-SALDEN -->
+            <div class="assets-list">
+                <div class="asset-row native-asset">
+                    <span class="asset-name">EXP (Native)</span>
+                    <span id="balance-exp" class="asset-balance">0.00000000 EXP</span>
+                </div>
+                <div class="asset-row">
+                    <span class="asset-name">BTC (Satoshi Layer)</span>
+                    <span id="balance-btc" class="asset-balance">0.00000000 BTC</span>
+                </div>
+                <div class="asset-row">
+                    <span class="asset-name">ETH (EVM/Gwei Layer)</span>
+                    <span id="balance-eth" class="asset-balance">0.00000000 ETH</span>
+                </div>
+            </div>
+
+            <!-- EXCLUSIVES EXP TRADING INTERFACE -->
+            <div class="trading-box">
+                <div class="trading-chart-header">
+                    <h3>EXP/LIQUIDITY INDEX (Endlose Exponentialkurve)</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <!-- HTML5 Canvas für die mathematisch rein grünen Kerzen -->
+                    <canvas id="exp-trading-chart"></canvas>
+                </div>
+                <div class="trading-buttons">
+                    <button id="trade-buy-btn" class="btn-buy">BUY (EXP)</button>
+                    <button id="trade-sell-btn" class="btn-sell">SELL (EXP)</button>
+                </div>
+            </div>
+
+            <!-- DUALER EXPLORER IM MAIN-DASHBOARD -->
+            <div class="dashboard-explorer">
+                <div class="explorer-tabs">
+                    <span class="active-tab">Dualer Fraktal Explorer</span>
+                </div>
+                <div class="explorer-split">
+                    <div class="explorer-pane">
+                        <h4>Lokale Blöcke (RAM/Hot)</h4>
+                        <div id="dash-local-blocks" class="block-stream"></div>
+                    </div>
+                    <div class="explorer-pane">
+                        <h4>Globale Blöcke (Ledger/Hash-Linked)</h4>
+                        <div id="dash-global-blocks" class="block-stream"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANSICHT 3: SETTINGS & SICHERHEITS-TRESOR -->
+        <section id="view-settings" class="view-section">
+            <div class="settings-header">
+                <button id="settings-back-btn" class="btn-back">⬅ Dashboard</button>
+                <h2>Sicherheits-Tresor & Profil</h2>
+            </div>
+
+            <div class="settings-card">
+                <h3>Benutzerdaten ändern</h3>
+                <div class="form-group">
+                    <label for="settings-username">Benutzername</label>
+                    <input type="text" id="settings-username">
+                </div>
+                <div class="form-group">
+                    <label for="settings-password">Passwort ändern (Vorsicht: Ändert Seed-Kurve!)</label>
+                    <input type="password" id="settings-password" placeholder="Neues Passwort eingeben">
+                </div>
+                <button id="save-settings-btn" class="btn-primary">Änderungen persistent verankern</button>
+            </div>
+
+            <div class="settings-card cryptographic-vault">
+                <h3>BIP-39 Passphrasen (Cold RAM Area)</h3>
+                <p class="alert-text">⚠️ Sichtbar nur bei aktivem Login. Wird niemals im LocalStorage abgelegt!</p>
+                
+                <div class="seed-box">
+                    <h4>12-Wort Seed Phrase</h4>
+                    <div id="seed-12-display" class="blur-sensitive">Sperre aktiv</div>
+                </div>
+                
+                <div class="seed-box">
+                    <h4>24-Wort Seed Phrase</h4>
+                    <div id="seed-24-display" class="blur-sensitive">Sperre aktiv</div>
+                </div>
+            </div>
+
+            <div class="settings-card public-keys">
+                <h3>Öffentliche Wallet-Adressen (Unverschlüsselt/Hot)</h3>
+                <div class="address-item">
+                    <span class="coin-label">EXP Address:</span>
+                    <code id="vault-address-exp">Initialisiere...</code>
+                </div>
+                <div class="address-item">
+                    <span class="coin-label">BTC Address (Satoshi):</span>
+                    <code id="vault-address-btc">Initialisiere...</code>
+                </div>
+                <div class="address-item">
+                    <span class="coin-label">ETH Address (EVM):</span>
+                    <code id="vault-address-eth">Initialisiere...</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANSICHT 4: FUSIONS-MINING INTERFACE -->
+        <section id="view-mining" class="view-section">
+            <div class="mining-header">
+                <button id="mining-back-btn" class="btn-back">⬅ Dashboard</button>
+                <h2>Fusions-Mining Hub</h2>
+            </div>
+
+            <!-- MINING LAYER SELEKTOR -->
+            <div class="mining-tabs">
+                <button id="tab-mine-exp" class="mining-tab-btn active">EXP Fusion</button>
+                <button id="tab-mine-btc" class="mining-tab-btn">BTC Satoshi</button>
+                <button id="tab-mine-eth" class="mining-tab-btn">ETH EVM</button>
+            </div>
+
+            <!-- DYNAMISCHE INTERFACES -->
+            <div class="mining-workspace">
+                <div id="mining-status-panel">
+                    <span class="mining-indicator-dot"></span> Status: <span id="mining-run-state">Autonom Aktiv</span>
+                </div>
+
+                <!-- EXP FUSION INTERFACE (KOMBINIERT BTC + ETH EIGENSCHAFTEN) -->
+                <div id="panel-mine-exp" class="mining-panel active">
+                    <div class="mining-stats-grid">
+                        <div class="stat-card"><h5>Roundtrip</h5><span id="exp-roundtrip">#1</span></div>
+                        <div class="stat-card"><h5>Global Liquidated Fees</h5><span id="exp-total-fees">0.0000 Gwei</span></div>
+                    </div>
+                    <div class="fusion-core">
+                        <div class="pulse-ring"></div>
+
+MANUELLER MATRIX COMBINE (EXP)
+
+Fusioniert die mathematische Struktur von BTC mit den Gas-Gebühren-Zyklen von ETH zu einem reinen, angebotsunabhängigen Preisanstieg.
+DifficultySHA-256 (Simuliert)
+Satoshi Reward+0.00000050 BTC
+
+Satoshi Block Hashen
+Gas Limit30,000,000
+Base Fee (Gwei)25 Gwei
+
+EVM State Transition Triggern
+
+
+Aktion
+
+
+Schließen
+Bestätigen
