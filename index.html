@@ -152,6 +152,12 @@
                 <h3>BIP-39 Passphrasen (Cold RAM Area)</h3>
                 <p class="alert-text">⚠️ Sichtbar nur bei aktivem Login. Wird niemals im LocalStorage abgelegt!</p>
                 
+                <!-- NEU: PASSWORT BARRIERE ZUM ENTSPERREN DER PHRASEN -->
+                <div class="form-group" style="margin-top: 8px; margin-bottom: 8px;">
+                    <input type="password" id="vault-unlock-password" placeholder="Passwort eingeben zum Entsperren" style="background:#020502; border:1px solid #153015;">
+                    <button id="btn-unlock-vault" class="btn-primary" style="padding:8px; margin-top:4px; font-size:11px;">Tresor Entsperren</button>
+                </div>
+                
                 <div class="seed-box">
                     <h4>12-Wort Seed Phrase</h4>
                     <div id="seed-12-display" class="blur-sensitive">Sperre aktiv</div>
