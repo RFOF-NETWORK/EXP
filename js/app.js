@@ -111,36 +111,136 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("manual-mine-btc-btn").addEventListener("click", () => { executeMiningStep("manual", "BTC"); updateUI(); });
     document.getElementById("manual-mine-eth-btn").addEventListener("click", () => { executeMiningStep("manual", "ETH"); updateUI(); });
 
-    // Swap-Modal Trigger
-    document.getElementById("action-swap-btn").addEventListener("click", () => {
+        // ==========================================
+    // NEU: SENDEN MODAL POP-UP (MANUELLE EINGABE)
+    // ==========================================
+    document.getElementById("action-send-btn").addEventListener("click", () => {
         const modal = document.getElementById("action-modal");
-        document.getElementById("modal-title").textContent = "Asset Swap (EVM RPC)";
+        document.getElementById("modal-title").textContent = "Krypto Senden (On-Chain)";
+        
+        // Dynamisches Interface im Pop-up mit Coin-Auswahl, Zieladresse und Betrag
         document.getElementById("modal-body").innerHTML = `
-            <label style="font-size:11px; color:#5a855a;">TAUSCHE VON:</label>
-            <select id="swap-from" style="width:100%; background:#020502; border:1px solid #153015; padding:8px; margin-bottom:8px;">
-                <option value="BTC">BTC (Satoshi Layer)</option>
-                <option value="ETH">ETH (EVM/Gwei Layer)</option>
-            </select>
-            <label style="font-size:11px; color:#5a855a;">BETRAG:</label>
-            <input type="text" id="swap-amount" placeholder="0.00" style="width:100%;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="font-size:11px; color:#5a855a;">COIN AUSWÄHLEN:</label>
+                <select id="send-asset" style="width:100%; background:#020502; border:1px solid #153015; padding:10px; color:#fff; border-radius:6px;">
+                    <option value="EXP">EXP (Native)</option>
+                    <option value="BTC">BTC (Satoshi Layer)</option>
+                    <option value="ETH">ETH (EVM/Gwei Layer)</option>
+                </select>
+                
+                <label style="font-size:11px; color:#5a855a;">ZIELADRESSE (EXP/BTC/ETH):</label>
+                <input type="text" id="send-target-address" placeholder="0x... oder 1BTC..." style="width:100%; background:#020502; border:1px solid #153015; color:#fff; padding:10px; border-radius:6px; font-family:monospace; font-size:12px;">
+                
+                <label style="font-size:11px; color:#5a855a;">BETRAG EINZUGEBEN:</label>
+                <input type="number" id="send-amount" step="any" placeholder="0.00000000" style="width:100%; background:#020502; border:1px solid #153015; color:#fff; padding:10px; border-radius:6px;">
+            </div>
         `;
+        
+        // Speicher den aktuellen Modus im Bestätigungs-Button
+        document.getElementById("modal-confirm-btn").className = "btn-primary execute-send";
         modal.classList.remove("hidden");
     });
 
-    document.getElementById("modal-close-btn").addEventListener("click", () => {
-        document.getElementById("action-modal").classList.add("hidden");
+    // ==========================================
+    // ERWEITERT: SWAP MODAL POP-UP (DUAL INTERFACE)
+    // ==========================================
+    document.getElementById("action-swap-btn").addEventListener("click", () => {
+        const modal = document.getElementById("action-modal");
+        document.getElementById("modal-title").textContent = "Asset Swap (EVM RPC)";
+        
+        // Interface mit zwei vollständigen Balken (Balken 1: Senden / Balken 2: Empfangen)
+        document.getElementById("modal-body").innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <!-- BALKEN 1: SENDEN (FROM) -->
+                <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:6px; border:1px solid #102510;">
+                    <label style="font-size:10px; color:#5a855a; display:block; margin-bottom:4px;">BALKEN 1: TAUSCHE VON (SELL)</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <select id="swap-from" style="background:#020502; border:1px solid #153015; padding:8px; color:#fff; border-radius:4px;">
+                            <option value="BTC">BTC</option>
+                            <option value="ETH">ETH</option>
+                        </select>
+                        <input type="number" id="swap-from-amount" step="any" placeholder="0.00" style="background:#020502; border:1px solid #153015; color:#fff; padding:8px; border-radius:4px; text-align:right;">
+                    </div>
+                </div>
+
+                <div style="text-align:center; color:#00ff00; font-size:14px; margin:-4px 0;">⬇️</div>
+
+                <!-- BALKEN 2: EMPFANGEN (TO) -->
+                <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:6px; border:1px solid #102510;">
+                    <label style="font-size:10px; color:#5a855a; display:block; margin-bottom:4px;">BALKEN 2: ERHALTE TOKEN (BUY)</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <select id="swap-to" style="background:#020502; border:1px solid #153015; padding:8px; color:#fff; border-radius:4px;" disabled>
+                            <option value="EXP">EXP (Exclusive)</option>
+                        </select>
+                        <input type="text" id="swap-to-estimated" placeholder="Berechnung..." style="background:#020502; border:1px solid #153015; color:#5a855a; padding:8px; border-radius:4px; text-align:right;" readonly>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Live-Vorschau-Berechnung für den zweiten Balken, sobald man im ersten tippt
+        const fromAmountInput = document.getElementById("swap-from-amount");
+        fromAmountInput.addEventListener("input", () => {
+            const amount = parseFloat(fromAmountInput.value);
+            if (!isNaN(amount) && amount > 0) {
+                const currentExpPrice = calculateCurrentPrice();
+                const fromAsset = document.getElementById("swap-from").value;
+                const rate = fromAsset === "BTC" ? 65000 : 3500;
+                const estimatedExp = (amount * rate) / currentExpPrice;
+                document.getElementById("swap-to-estimated").value = estimatedExp.toFixed(6) + " EXP";
+            } else {
+                document.getElementById("swap-to-estimated").value = "";
+            }
+        });
+
+        // Speicher den aktuellen Modus im Bestätigungs-Button
+        document.getElementById("modal-confirm-btn").className = "btn-primary execute-swap";
+        modal.classList.remove("hidden");
     });
 
-    document.getElementById("modal-confirm-btn").addEventListener("click", () => {
-        const fromAsset = document.getElementById("swap-from")?.value;
-        const amount = document.getElementById("swap-amount")?.value;
-        if (fromAsset && amount) {
+    // ==========================================
+    // GEMEINSAMER VERRECHNUNGS-TRIGGER FÜR MODALS
+    // ==========================================
+    document.getElementById("modal-confirm-btn").addEventListener("click", (e) => {
+        const targetBtn = e.target;
+
+        // VERRECHNUNG: SENDEN
+        if (targetBtn.classList.contains("execute-send")) {
+            const asset = document.getElementById("send-asset").value;
+            const address = document.getElementById("send-target-address").value.trim();
+            const amount = parseFloat(document.getElementById("send-amount").value);
+            
+            if (!address) return alert("Bitte Zieladresse eingeben!");
+            if (isNaN(amount) || amount <= 0) return alert("Ungültiger Betrag!");
+
+            const balanceKey = `balance_${asset.toLowerCase()}`;
+            let currentBalance = parseFloat(localStorage.getItem(balanceKey) || "0");
+
+            if (currentBalance < amount) {
+                return alert(`Transaktion abgebrochen: Zu wenig ${asset}-Guthaben!`);
+            }
+
+            // Abzug der Balance auf dem Smartphone (Persistent im Hot Storage)
+            localStorage.setItem(balanceKey, (currentBalance - amount).toFixed(8));
+            alert(`Erfolgreich gesendet:\n${amount.toFixed(8)} ${asset}\nAn: ${address}\n(On-Chain Validierung abgeschlossen)`);
+            
+            updateUI();
+            document.getElementById("action-modal").classList.add("hidden");
+        }
+
+        // VERRECHNUNG: SWAP (EVM CONFORM)
+        if (targetBtn.classList.contains("execute-swap")) {
+            const fromAsset = document.getElementById("swap-from").value;
+            const amount = document.getElementById("swap-from-amount").value;
+            
+            if (!amount || parseFloat(amount) <= 0) return alert("Bitte gültigen Betrag im ersten Balken eingeben!");
+
             const res = processSwapRequest(fromAsset, "EXP", amount);
             alert(res.msg);
+            
             if (res.success) {
                 updateUI();
                 document.getElementById("action-modal").classList.add("hidden");
             }
         }
     });
-});
